@@ -1,0 +1,23 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+ptpython = "*"
+v = {editable = true,version = "*"}
+pylint = "*"
+gensim = "*"
+sklearn = "*"
+nltk = "*"
+
+[packages]
+flask = "*"
+numpy = "*"
+pandas = "*"
+tensorflow = "*"
+scipy = "*"
+keras = "*"
+
+[requires]
+python_version = "3.6"
