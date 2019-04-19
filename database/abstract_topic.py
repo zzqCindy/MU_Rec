@@ -18,8 +18,8 @@ class Abstract(object):
 
     def save(self):
         abstract = {"content": self.content}
-        for i in range(0,len(self.top_list)):
-            abstract['topic%d'%i] = float(self.top_list[i])
+        for i in range(0,10):
+            abstract['topic%d'%i] = float(self.top_list.get(i,0))
         print(abstract)
         coll = get_coll()
         id = coll.insert_one(abstract)
