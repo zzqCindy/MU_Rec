@@ -6,23 +6,23 @@ from nltk.tokenize import WordPunctTokenizer
 
 client = pymongo.MongoClient('127.0.0.1', 27017)
 db = client.test
-coll_publi = db.publication
-coll_topic = db.abstract_topic
+coll_publi = db.publication_all
+coll_topic = db.abstract_topic_all
 publi = coll_publi.find()
 
 stopwords = []
 
-with open("../model/ZZ/stopwords.txt", "r") as doc:
+with open("../model/LDA/stopwords.txt", "r") as doc:
     contents = doc.readlines()
     for name in contents:
         name = name.strip('\n')
         stopwords.append(name)
 
-with open("../model/ZZ/dict.json", "r") as f:
+with open("../model/LDA/dict.json", "r") as f:
     dic = json.load(f)
 
-dictionary = Dictionary.load_from_text('../model/ZZ/dictionary')
-lda = LdaModel.load('../model/ZZ/lda10.model')
+dictionary = Dictionary.load_from_text('../model/LDA/dictionary')
+lda = LdaModel.load('../model/LDA/lda10.model')
 
 for dict in publi:
     document = dict['abstractContent']
