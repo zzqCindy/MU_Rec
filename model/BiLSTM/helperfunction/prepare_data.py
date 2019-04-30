@@ -2,14 +2,69 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras_preprocessing.sequence import pad_sequences
+from keras.preprocessing import text
 from sklearn.utils import shuffle
+import nltk
+from nltk.corpus import stopwords
+from gensim.models import KeyedVectors
 
 names = ["class", "title", "content"]
 
+lemma = nltk.wordnet.WordNetLemmatizer()
+sno = nltk.stem.SnowballStemmer('english')
+stop_words = set(stopwords.words('english'))
+
+def preprocessing(filename):
+    docu_csv = pd.read_csv(filename, encoding = 'unicode_escape', usecols=[0,2])
+    docu_csv.dropna(inplace=True)
+    label = list(docu_csv.iloc[:,0])
+    raw_abstract = list(docu_csv.iloc[:,1])
+    abstract = []
+    for document in raw_abstract:
+        words = text.text_to_word_sequence(document)
+        doc = []
+        for word in words:
+            if word not in stop_words:
+                word = lemma.lemmatize(word)
+                word = sno.stem(word)
+                doc.append(word)
+        tmp_abstract = ' '.join(doc)
+        abstract.append(tmp_abstract)
+    data_label = {'Label': label,'Abstract': abstract}
+    df = pd.DataFrame(data_label, columns = ['Label','Abstract'])
+    df.to_csv('../dataset/abstract.csv')
+
+def save_to_npy(label,data):
+    model = KeyedVectors.load_word2vec_format('../model/PubMed-and-PMC-w2v.bin', binary=True)
+    vector = []
+    for i in range(len(data)):
+        if i != 0 and label[i] != label[i-1]:
+            np.save('../dataset/vector_%d.npy' %label[i-1], np.array(vector))
+            vector = []
+        x_test = np.zeros((350, 200))
+        index = 0
+        abstract = data[i].split(' ')
+        for word in abstract:
+            if len(word) < 2:
+                continue
+            if index == 350:
+                break
+            if word in model.wv.vocab:
+                x_test[index] = model.wv[word]
+            else:
+                x_test[index] = np.array([0]*200)
+            index += 1
+        vector.append(x_test)
+    np.save('../dataset/vector_%d.npy' %label[len(label)-1], np.array(vector))
+
+
+# preprocessing('../dataset/roughdata.csv')
+docu_csv = pd.read_csv('../dataset/abstract.csv', encoding = 'unicode_escape')
+docu_csv.dropna(inplace=True)
+save_to_npy(list(docu_csv.iloc[:,1]),list(docu_csv.iloc[:,2]))
 
 def to_one_hot(y, n_class):
     return np.eye(n_class)[y.astype(int)]
-
 
 def load_data(file_name, sample_ratio=1, n_class=15, names=names, one_hot=True):
     '''load data from .csv file'''
@@ -21,24 +76,7 @@ def load_data(file_name, sample_ratio=1, n_class=15, names=names, one_hot=True):
         y = to_one_hot(y, n_class)
     return x, y
 
-
-def data_preprocessing(train, test, max_len):
-    """transform to one-hot idx vector by VocabularyProcessor"""
-    """VocabularyProcessor is deprecated, use v2 instead"""
-    vocab_processor = tf.contrib.learn.preprocessing.v2(max_len)
-    x_transform_train = vocab_processor.fit_transform(train)
-    x_transform_test = vocab_processor.transform(test)
-    vocab = vocab_processor.vocabulary_
-    vocab_size = len(vocab)
-    x_train_list = list(x_transform_train)
-    x_test_list = list(x_transform_test)
-    x_train = np.array(x_train_list)
-    x_test = np.array(x_test_list)
-
-    return x_train, x_test, vocab, vocab_size
-
-
-def data_preprocessing_v2(train, test, max_len, max_words=50000):
+def data_preprocessing(train, test, max_len, max_words=50000):
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=max_words)
     tokenizer.fit_on_texts(train)
     train_idx = tokenizer.texts_to_sequences(train)
@@ -76,7 +114,6 @@ def split_dataset(x_test, y_test, dev_ratio):
     y_dev = y_test[:dev_size]
     y_test = y_test[dev_size:]
     return x_test, x_dev, y_test, y_dev, dev_size, test_size - dev_size
-
 
 def fill_feed_dict(data_X, data_Y, batch_size):
     """Generator to yield batches"""

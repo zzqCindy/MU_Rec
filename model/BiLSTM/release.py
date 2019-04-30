@@ -60,7 +60,7 @@ def classifier(modelpath, datapath):
     print(result)
     return result, predict
 
-model_path = './model_saved/'
+model_path = './model/'
 data_path = './dataset/'
 result, prediction = classifier(model_path, data_path)
 print(result)

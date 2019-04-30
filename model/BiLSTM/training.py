@@ -8,8 +8,8 @@ def main(modelpath, datapath):
     x_test, y_test = load_data(datapath+"test.csv", one_hot=False)
 
     # data preprocessing
-    x_train, x_test, vocab_size, train_words, test_words, tokenizer = data_preprocessing_v2(x_train, x_test, max_len=32,
-                                                                                 max_words=60002)
+    x_train, x_test, vocab_size, train_words, test_words, tokenizer = data_preprocessing(x_train, x_test, max_len=32,
+                                                                                         max_words=60002)
     print("train size: ", len(x_train))
     print("vocab size: ", vocab_size)
 
