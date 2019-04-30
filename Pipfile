@@ -10,6 +10,7 @@ pylint = "*"
 gensim = "*"
 sklearn = "*"
 nltk = "*"
+biopython = "*"
 
 [packages]
 flask = "*"
