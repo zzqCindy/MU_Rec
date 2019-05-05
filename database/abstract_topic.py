@@ -12,14 +12,12 @@ class Abstract(object):
         self.label = label
         self.localhost = env_dist.get('mongo_host','127.0.0.1')
         self.port = env_dist.get('mongo_port','27017')
+        self.client = pymongo.MongoClient(self.localhost,int(self.port))
+        self.db = self.client.test
         self.username = env_dist.get('mongo_username','admin')
         self.password = env_dist.get('mongo_password','password')
-        if len(self.username) > 0 and len(self.password) > 0:
-            self.auth = '%s:%s@' %(self.username,self.password)
-        else:
-            self.auth = ''
-        self.client = pymongo.MongoClient('mongodb://%s%s:%s'%(self.auth,self.localhost, self.port))
-        self.db = self.client.test
+        if self.username and self.password:
+            self.db.authenticate(self.username,self.password)
         self.abs_topic = self.db.abstract_topic
 
     def save(self):
@@ -52,3 +50,8 @@ class Abstract(object):
     def query_abstract(self):
         abstract = self.db.abstract_topic.find()
         return abstract
+
+abstract = Abstract('','')
+all = abstract.abs_topic.find().limit(10)
+for a in all:
+    print(a)
