@@ -1,3 +1,6 @@
+import nltk
+nltk.download('stopwords')
+
 from flask import Flask, request
 import json, warnings, pickle, re, nltk, numpy as np, tensorflow as tf
 from nltk.corpus import stopwords
@@ -10,6 +13,8 @@ from keras.models import load_model
 from keras.preprocessing import text
 from flask import Response
 from keras.preprocessing import sequence
+
+
 
 app = Flask(__name__)
 
@@ -93,4 +98,4 @@ def recommend_list():
 
 
 if __name__ == "__main__":
-    app.run(port = 8881)
+    app.run(host = '0.0.0.0', port = 5000)
