@@ -1,14 +1,18 @@
-import pymongo, math
+import pymongo, math, os
 
 db_list = ['Analytical', 'Anatomy','Anthropology','Chemicals','Disciplines', 'Diseases','Health',
         'Humanities','Information','Organisms', 'Phenomena', 'Psychiatry', 'Technology']
+
+env_dist = os.environ
 
 class Abstract(object):
 
     def __init__(self, top_list, label):
         self.top_list = top_list
         self.label = label
-        self.client = pymongo.MongoClient('127.0.0.1', 27017)
+        self.localhost = env_dist.get('mongo_host','127.0.0.1')
+        self.port = env_dist.get('mongo_port','27017')
+        self.client = pymongo.MongoClient(self.localhost, self.port)
         self.db = self.client.test
         self.abs_topic = self.db.abstract_topic
 
@@ -34,7 +38,7 @@ class Abstract(object):
             result.append(sum)
         idx = list(range(0,len(result)))
         selected_idx = [x for _,x in sorted(zip(result,idx))]
-        final_id = [selected_data[idx]['_id'] for idx in selected_idx[:20]]
+        final_id = [selected_data[idx]['_id'] for idx in selected_idx[:10]]
         coll = self.db['%s_publication' %db_list[self.label]]
         recom_list = list(coll.find({'_id':{'$in':final_id}},{'_id':0}))
         return recom_list

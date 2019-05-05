@@ -1,5 +1,5 @@
-from flask import Flask, request, abort
-import json, warnings, pickle, re, nltk, numpy as np
+from flask import Flask, request
+import json, warnings, pickle, re, nltk, numpy as np, tensorflow as tf
 from nltk.corpus import stopwords
 warnings.filterwarnings('ignore')  # To ignore all warnings that arise here to enhance clarity
 from gensim.models.ldamodel import LdaModel
@@ -29,7 +29,21 @@ with open("model/LDA/dict.json", "r") as f:
 
 dictionary = Dictionary.load_from_text('model/LDA/dictionary')
 lda = LdaModel.load('model/LDA/lda10.model')
-# BLSTM = load_model('model/BiLSTM/model/token_model.h5')
+
+class BLSTM(object):
+
+    def __init__(self):
+        self.model = load_model('model/BiLSTM/model/token_model.h5')
+        self.model._make_predict_function()
+        self.graph = tf.get_default_graph()
+
+    def predict(self, data):
+        with self.graph.as_default():
+            labels = self.model.predict(data)
+        return labels
+
+lstm_model = BLSTM()
+
 with open('model/BiLSTM/model/tokenizer.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
 
@@ -41,8 +55,9 @@ def lda_preprocessing(lda_data):
     top_list = {}
     for s in vector:
         top_list[s[0]] = s[1]
+    for j in range(0,10):
+        top_list[j] = float(top_list.get(j,0))
     return top_list
-
 
 def raw_preprocessing(raw_abstract):
     abstract = []
@@ -60,21 +75,20 @@ def raw_preprocessing(raw_abstract):
     return abstract
 
 
-@app.route('/recommend_list/', methods=['GET','POST'])
+@app.route('/recommendPublication/', methods=['GET','POST'])
 def recommend_list():
-    data_list = json.loads(request.data.decode("utf-8"))
+    data_list = json.loads(request.get_data().decode("utf-8"))
     label = [0]*13
     abstract = raw_preprocessing([data['abstractContent'] for data in data_list if len(data['abstractContent']) > 10])
     token = tokenizer.texts_to_sequences(abstract)
     train = sequence.pad_sequences(token, maxlen=200)
-    model = load_model('model/BiLSTM/model/token_model.h5')
-    pred = model.predict(train)
+    pred = lstm_model.predict(train)
     for idx in np.argmax(pred,axis=1):
         label[idx] += 1
     pre = label.index(max(label))
     abs_data = Abstract(lda_preprocessing(' '.join(abstract)),pre)
     data = abs_data.recom()
-    # 返回Jason格式的响应
+    # 返回json格式的响应
     return Response(json.dumps(data),  mimetype='application/json')
 
 
