@@ -1,5 +1,5 @@
 import nltk
-nltk.download()
+nltk.download('all')
 
 from flask import Flask, request
 import json, warnings, pickle, re, nltk, numpy as np, tensorflow as tf
