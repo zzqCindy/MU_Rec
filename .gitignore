@@ -1,5 +1,6 @@
 .idea/
 model/BiLSTM/dataset/
+model/BiLSTM/tmp/
 prototype/
 app.pid
 # Byte-compiled / optimized / DLL files
