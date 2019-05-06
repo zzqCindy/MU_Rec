@@ -13,10 +13,11 @@ from keras.models import load_model
 from keras.preprocessing import text
 from flask import Response
 from keras.preprocessing import sequence
-
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)
 
 stopword = []
 lemma = nltk.wordnet.WordNetLemmatizer()
@@ -79,6 +80,9 @@ def raw_preprocessing(raw_abstract):
         abstract.append(tmp_abstract)
     return abstract
 
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
 
 @app.route('/recommendPublication/', methods=['GET','POST'])
 def recommend_list():

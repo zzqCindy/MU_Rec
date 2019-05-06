@@ -23,6 +23,7 @@ keras = "*"
 flask-pymongo = "*"
 gensim = "*"
 nltk = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.7"
