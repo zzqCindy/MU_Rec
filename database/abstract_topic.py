@@ -52,3 +52,8 @@ class Abstract(object):
     def query_abstract(self):
         abstract = self.db.abstract_topic.find()
         return abstract
+
+# abstract = Abstract('','')
+# all = abstract.abs_topic.find().limit(10)
+# for a in all:
+#     print(a)
